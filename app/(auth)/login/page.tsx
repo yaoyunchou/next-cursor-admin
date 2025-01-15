@@ -3,8 +3,8 @@ import { Form, Input, Button, message } from "antd"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { UserAuth } from "@/lib/types/auth"
-import { setToken } from "@/lib/utils/auth"
 import Image from "next/image"
+import Cookies from 'js-cookie'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -26,8 +26,10 @@ export default function LoginPage() {
       if (!response.ok) {
         throw new Error(data.message || '登录失败')
       }
+      console.log('--------------------',data.token)
+      // 将token存入cookie
+      Cookies.set('auth-token', data.token)
 
-      setToken(data.token)
       message.success('登录成功')
       router.push('/dashboard')
     } catch (error: any) {
