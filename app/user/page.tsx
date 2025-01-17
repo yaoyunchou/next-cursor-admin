@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { Table, Button, Modal, Form, Input, Select, message, Popconfirm } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { API_BASE_URL, API_ROUTES } from '@root/config/api';
@@ -20,25 +20,13 @@ const UserPage = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [form] = Form.useForm();
-  const isFirstRender = useRef(true);
-  
 
-
-  // 获取用户列表
   const fetchUsers = async () => {
-    if (!isFirstRender.current) return;
-    isFirstRender.current = false;
-    
     setLoading(true);
     try {
       const response = await fetch(`${API_BASE_URL}${API_ROUTES.user.list}`);
       const data = await response.json();
-      if(data.code === 0){
-        setUsers(data.data.list || []);
-   
-      }else{
-        message.error(data.message||'');
-      }
+      setUsers(data.list || []);
     } catch (error) {
       message.error('获取用户列表失败');
     } finally {
@@ -113,14 +101,12 @@ const UserPage = () => {
     },
   ];
 
-  // 编辑用户
   const handleEdit = (user: User) => {
     setEditingUser(user);
     form.setFieldsValue(user);
     setModalVisible(true);
   };
 
-  // 删除用户
   const handleDelete = async (id: string) => {
     try {
       await fetch(`${API_BASE_URL}${API_ROUTES.user.delete}`, {
@@ -135,16 +121,13 @@ const UserPage = () => {
     }
   };
 
-  // 提交表单
   const handleSubmit = async (values: Partial<User>) => {
     try {
       if (editingUser) {
-        // 对roles进行处理， 
-        const roles = values.role ? values.role.split(',') : [];
-        await fetch(`${API_BASE_URL}${API_ROUTES.user.update}/${editingUser.id}`, {
-          method: editingUser ? 'PUT' : 'POST',
+        await fetch(`${API_BASE_URL}${API_ROUTES.user.update}`, {
+          method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...values, id: editingUser.id,roles:roles }),
+          body: JSON.stringify({ ...values, id: editingUser.id }),
         });
         message.success('更新成功');
       } else {
@@ -169,11 +152,10 @@ const UserPage = () => {
         <Button 
           type="primary" 
           onClick={() => {
-            // setEditingUser(null);
-            // form.resetFields();
-            // setModalVisible(true);
-             message.success('新增用户成功！！！');
-           }}
+            setEditingUser(null);
+            form.resetFields();
+            setModalVisible(true);
+          }}
         >
           新增用户
         </Button>

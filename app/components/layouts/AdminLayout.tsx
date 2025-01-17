@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Layout, Menu, Button, Avatar, Dropdown } from 'antd';
+import { Layout, Menu, Button, Avatar, Dropdown, message } from 'antd';
 import { useRouter, usePathname } from 'next/navigation';
 import {
   MenuFoldOutlined,
@@ -20,7 +20,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const [collapsed, setCollapsed] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
-
+  const [messageApi, contextHolder] = message.useMessage();
   const handleLogout = () => {
     Cookies.remove('auth-token');
     router.push('/login');
@@ -66,6 +66,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <Layout className="min-h-screen">
+        {contextHolder}
       <Sider 
         trigger={null} 
         collapsible 

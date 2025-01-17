@@ -1,11 +1,3 @@
-/*
- * @Author: yaoyc yaoyunchou@bananain.com
- * @Date: 2025-01-15 16:29:16
- * @LastEditors: yaoyc yaoyunchou@bananain.com
- * @LastEditTime: 2025-01-15 17:07:02
- * @FilePath: \next-cursor-admin\app\routes.ts
- * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
- */
 export const routes = {
   home: '/',
   dashboard: '/dashboard',
@@ -17,9 +9,19 @@ export const routes = {
   }
 }
 
+// 公开路由，无需认证即可访问
 export const publicRoutes = [
-  '/login',
-  '/register',
+  routes.auth.login,
+  routes.auth.register,
   '/_next',
   '/favicon.ico'
 ] 
+
+// 默认重定向规则
+export const defaultRedirects = {
+  // 已登录用户访问首页时重定向到仪表板
+  authenticatedHome: routes.dashboard,
+  // 未登录用户访问首页时重定向到登录页
+  unauthenticatedHome: routes.auth.login
+} 
+
