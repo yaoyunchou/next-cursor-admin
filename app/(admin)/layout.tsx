@@ -6,12 +6,17 @@
  * @FilePath: \next-cursor-admin\app\(admin)\layout.tsx
  * @Description: 管理后台布局
  */
+'use client'
+import { initMessage } from '@/utils/message';
 import AdminLayout from '@root/components/layouts/AdminLayout';
+import { message } from 'antd';
+import { useEffect } from 'react';
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+
   return <AdminLayout>{children}</AdminLayout>;
 } 

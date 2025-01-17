@@ -20,9 +20,8 @@ export const API_ROUTES = {
     delete: '/user',
   },
   profile: {
-    get: '/profile',
-    update: '/profile/update',
-    changePassword: '/profile/password',
+    get: '/user/:id',
+    update: '/user/:id',
     uploadAvatar: '/profile/avatar',
   },
   settings: {

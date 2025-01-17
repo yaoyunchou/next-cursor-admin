@@ -11,7 +11,7 @@
   "dependencies": {
     "@types/antd": "^1.0.4",
     "@types/js-cookie": "^3.0.6",
-    "antd": "4.24.16",
+    "antd": "^5.23.1",
     "js-cookie": "^3.0.5",
     "next": "15.1.4",
     "react": "18.0.0",

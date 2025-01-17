@@ -1,11 +1,13 @@
 "use client"
-import { Form, Input, Button, message } from "antd"
+import { Form, Input, Button } from "antd"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { UserAuth } from "@/lib/types/auth"
 import Image from "next/image"
 import Cookies from 'js-cookie'
 import { API_BASE_URL, API_ROUTES } from '@root/config/api'
+import { Message } from "@/utils/message"
+
 
 export default function LoginPage() {
   const router = useRouter()
@@ -25,14 +27,20 @@ export default function LoginPage() {
       const data = await response.json()
       
       if (!response.ok) {
+        Message.error(data.message || '登录失败')
         throw new Error(data.message || '登录失败')
       }
+      console.log(data)
+      if(data.code ===0){
+        Cookies.set('token', data.data.access_token)
+        router.replace('/dashboard')
+        // window.location.href = '/dashboard'
+        Message.success('登录成功')
 
-      Cookies.set('auth-token', data.token)
-      message.success('登录成功')
-      router.push('/dashboard')
+      }
+    
     } catch (error: any) {
-      message.error(error.message || '登录失败')
+
     } finally {
       setLoading(false)
     }

@@ -6,6 +6,7 @@ import { UserOutlined, LockOutlined, UploadOutlined } from '@ant-design/icons';
 import type { UploadProps } from 'antd';
 import type { TabsProps } from 'antd';
 import { API_BASE_URL, API_ROUTES } from '@root/config/api';
+import { http } from '@/utils/request';
 import Cookies from 'js-cookie';
 
 interface UserProfile {
@@ -29,12 +30,11 @@ const ProfilePage = () => {
   const fetchProfile = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}${API_ROUTES.profile.get}`);
-      const data = await response.json();
+      const { data } = await http.get<UserProfile>(API_ROUTES.profile.get);
       setProfile(data);
       form.setFieldsValue(data);
     } catch (error) {
-      message.error('获取个人信息失败');
+      // 错误已经在 request 中统一处理
     } finally {
       setLoading(false);
     }
@@ -42,15 +42,11 @@ const ProfilePage = () => {
 
   const handleUpdateProfile = async (values: Partial<UserProfile>) => {
     try {
-      await fetch(`${API_BASE_URL}${API_ROUTES.profile.update}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(values),
-      });
+      await http.post(API_ROUTES.profile.update, values);
       message.success('更新成功');
       fetchProfile();
     } catch (error) {
-      message.error('更新失败');
+      // 错误已经在 request 中统一处理
     }
   };
 
@@ -60,15 +56,11 @@ const ProfilePage = () => {
     confirmPassword: string;
   }) => {
     try {
-      await fetch(`${API_BASE_URL}${API_ROUTES.profile.changePassword}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(values),
-      });
+      await http.post(API_ROUTES.profile.changePassword, values);
       message.success('密码修改成功');
       passwordForm.resetFields();
     } catch (error) {
-      message.error('密码修改失败');
+      // 错误已经在 request 中统一处理
     }
   };
 

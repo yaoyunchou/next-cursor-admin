@@ -12,7 +12,7 @@ import { routes, publicRoutes } from "./app/routes"
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
-  const token = request.cookies.get('auth-token')
+  const token = request.cookies.get('token')
 
   
 

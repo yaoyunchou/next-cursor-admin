@@ -22,7 +22,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const pathname = usePathname();
   const [messageApi, contextHolder] = message.useMessage();
   const handleLogout = () => {
-    Cookies.remove('auth-token');
+    Cookies.remove('token');
     router.push('/login');
   };
 

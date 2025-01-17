@@ -4,6 +4,8 @@ import { useState, useEffect, useRef } from 'react';
 import { Table, Button, Modal, Form, Input, Select, message, Popconfirm } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { API_BASE_URL, API_ROUTES } from '@root/config/api';
+import { http } from '@/utils/request';
+import { Message } from '@/utils/message';
 
 interface User {
   id: string;
@@ -19,6 +21,11 @@ const UserPage = () => {
   const [loading, setLoading] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [searchForm] = Form.useForm();
+  const [searchParams, setSearchParams] = useState({
+    username: '',
+    role: undefined as string | undefined,
+  });
   const [form] = Form.useForm();
   const isFirstRender = useRef(true);
   
@@ -31,16 +38,16 @@ const UserPage = () => {
     
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}${API_ROUTES.user.list}`);
-      const data = await response.json();
-      if(data.code === 0){
-        setUsers(data.data.list || []);
-   
-      }else{
-        message.error(data.message||'');
-      }
+      const params = new URLSearchParams();
+      if (searchParams.username) params.append('username', searchParams.username);
+      if (searchParams.role) params.append('role', searchParams.role);
+      
+      const { data } = await http.get<{ list: User[] }>(
+        `${API_BASE_URL}${API_ROUTES.user.list}?${params.toString()}`
+      );
+      setUsers(data.list || []);
     } catch (error) {
-      message.error('获取用户列表失败');
+      // 错误已经在 request 中统一处理
     } finally {
       setLoading(false);
     }
@@ -123,15 +130,11 @@ const UserPage = () => {
   // 删除用户
   const handleDelete = async (id: string) => {
     try {
-      await fetch(`${API_BASE_URL}${API_ROUTES.user.delete}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id }),
-      });
+      await http.post(`${API_BASE_URL}${API_ROUTES.user.delete}`, { id });
       message.success('删除成功');
       fetchUsers();
     } catch (error) {
-      message.error('删除失败');
+      // 错误已经在 request 中统一处理
     }
   };
 
@@ -139,40 +142,80 @@ const UserPage = () => {
   const handleSubmit = async (values: Partial<User>) => {
     try {
       if (editingUser) {
-        // 对roles进行处理， 
         const roles = values.role ? values.role.split(',') : [];
-        await fetch(`${API_BASE_URL}${API_ROUTES.user.update}/${editingUser.id}`, {
-          method: editingUser ? 'PUT' : 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...values, id: editingUser.id,roles:roles }),
-        });
+        await http.put(
+          `${API_BASE_URL}${API_ROUTES.user.update}/${editingUser.id}`, 
+          { ...values, id: editingUser.id, roles }
+        );
         message.success('更新成功');
       } else {
-        await fetch(`${API_BASE_URL}${API_ROUTES.user.create}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(values),
-        });
+        await http.post(`${API_BASE_URL}${API_ROUTES.user.create}`, values);
         message.success('创建成功');
       }
       setModalVisible(false);
       fetchUsers();
       form.resetFields();
     } catch (error) {
-      message.error('操作失败');
+      // 错误已经在 request 中统一处理
     }
+  };
+
+  // Add search handler
+  const handleSearch = async (values: typeof searchParams) => {
+    isFirstRender.current = true;
+    setSearchParams(values);
+    await fetchUsers();
+  };
+
+  // Add reset handler
+  const handleReset = () => {
+    searchForm.resetFields();
+    isFirstRender.current = true;
+    setSearchParams({ username: '', role: undefined });
+    fetchUsers();
   };
 
   return (
     <div className="p-6">
+      <div className="mb-4 bg-white p-4 rounded shadow">
+        <Form
+          form={searchForm}
+          layout="inline"
+          onFinish={handleSearch}
+        >
+          <Form.Item name="username" label="用户名">
+            <Input placeholder="请输入用户名" allowClear />
+          </Form.Item>
+          <Form.Item name="role" label="角色">
+            <Select
+              placeholder="请选择角色"
+              allowClear
+              style={{ width: 200 }}
+            >
+              <Select.Option value="admin">管理员</Select.Option>
+              <Select.Option value="user">普通用户</Select.Option>
+              <Select.Option value="editor">编辑</Select.Option>
+            </Select>
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit" className="mr-2">
+              查询
+            </Button>
+            <Button onClick={handleReset}>
+              重置
+            </Button>
+          </Form.Item>
+        </Form>
+      </div>
+
       <div className="mb-4">
         <Button 
           type="primary" 
           onClick={() => {
-            // setEditingUser(null);
-            // form.resetFields();
-            // setModalVisible(true);
-             message.success('新增用户成功！！！');
+            setEditingUser(null);
+            form.resetFields();
+            setModalVisible(true);
+             Message.success('新增用户成功！！！');
            }}
         >
           新增用户
