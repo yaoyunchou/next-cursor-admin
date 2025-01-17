@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Card, Form, Input, Button, message, Switch, Space } from 'antd';
+import { API_BASE_URL, API_ROUTES } from '@root/config/api';
 
 interface SystemSettings {
   siteName: string;
@@ -21,7 +22,7 @@ const SettingsPage = () => {
   const fetchSettings = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/settings');
+      const response = await fetch(`${API_BASE_URL}${API_ROUTES.settings.get}`);
       const data = await response.json();
       form.setFieldsValue(data);
     } catch (error) {
@@ -33,8 +34,8 @@ const SettingsPage = () => {
 
   const handleSubmit = async (values: SystemSettings) => {
     try {
-      await fetch('/api/settings', {
-        method: 'PUT',
+      await fetch(`${API_BASE_URL}${API_ROUTES.settings.update}`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(values),
       });

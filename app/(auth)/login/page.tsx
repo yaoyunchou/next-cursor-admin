@@ -5,6 +5,7 @@ import { useState } from "react"
 import { UserAuth } from "@/lib/types/auth"
 import Image from "next/image"
 import Cookies from 'js-cookie'
+import { API_BASE_URL, API_ROUTES } from '@root/config/api'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -13,7 +14,7 @@ export default function LoginPage() {
   const handleLogin = async (values: UserAuth) => {
     setLoading(true)
     try {
-      const response = await fetch('/api/auth/login', {
+      const response = await fetch(`${API_BASE_URL}${API_ROUTES.auth.login}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -26,10 +27,8 @@ export default function LoginPage() {
       if (!response.ok) {
         throw new Error(data.message || '登录失败')
       }
-      console.log('--------------------',data.token)
-      // 将token存入cookie
-      Cookies.set('auth-token', data.token)
 
+      Cookies.set('auth-token', data.token)
       message.success('登录成功')
       router.push('/dashboard')
     } catch (error: any) {

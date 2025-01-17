@@ -5,8 +5,8 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
-        source: '/api/:path*',
-        destination: 'http://localhost:5000/api/:path*', // 这里替换为你的API服务器地址和端口
+        source: '/api/v1/:path*',
+        destination: 'http://localhost:8080/api/v1/:path*', // 这里替换为你的API服务器地址和端口
       },
     ];
   },

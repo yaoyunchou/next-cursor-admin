@@ -5,6 +5,8 @@ import { Card, Form, Input, Button, message, Tabs, Upload } from 'antd';
 import { UserOutlined, LockOutlined, UploadOutlined } from '@ant-design/icons';
 import type { UploadProps } from 'antd';
 import type { TabsProps } from 'antd';
+import { API_BASE_URL, API_ROUTES } from '@root/config/api';
+import Cookies from 'js-cookie';
 
 interface UserProfile {
   username: string;
@@ -27,7 +29,7 @@ const ProfilePage = () => {
   const fetchProfile = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/profile');
+      const response = await fetch(`${API_BASE_URL}${API_ROUTES.profile.get}`);
       const data = await response.json();
       setProfile(data);
       form.setFieldsValue(data);
@@ -40,8 +42,8 @@ const ProfilePage = () => {
 
   const handleUpdateProfile = async (values: Partial<UserProfile>) => {
     try {
-      await fetch('/api/profile', {
-        method: 'PUT',
+      await fetch(`${API_BASE_URL}${API_ROUTES.profile.update}`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(values),
       });
@@ -58,8 +60,8 @@ const ProfilePage = () => {
     confirmPassword: string;
   }) => {
     try {
-      await fetch('/api/profile/password', {
-        method: 'PUT',
+      await fetch(`${API_BASE_URL}${API_ROUTES.profile.changePassword}`, {
+        method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(values),
       });
@@ -72,9 +74,9 @@ const ProfilePage = () => {
 
   const uploadProps: UploadProps = {
     name: 'avatar',
-    action: '/api/profile/avatar',
+    action: `${API_BASE_URL}${API_ROUTES.profile.uploadAvatar}`,
     headers: {
-      authorization: 'authorization-text',
+      authorization: Cookies.get('auth-token') || '',
     },
     onChange(info) {
       if (info.file.status === 'done') {

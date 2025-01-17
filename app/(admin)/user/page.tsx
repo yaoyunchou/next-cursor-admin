@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Table, Button, Modal, Form, Input, Select, message, Popconfirm } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
+import { API_BASE_URL, API_ROUTES } from '@root/config/api';
 
 interface User {
   id: string;
@@ -19,13 +20,19 @@ const UserPage = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [form] = Form.useForm();
+  const isFirstRender = useRef(true);
 
   const fetchUsers = async () => {
+    if (!isFirstRender.current) return;
+    isFirstRender.current = false;
+    
     setLoading(true);
     try {
-      const response = await fetch('/api/users');
+      const response = await fetch(`${API_BASE_URL}${API_ROUTES.user.list}`);
       const data = await response.json();
-      setUsers(data);
+      if(data.code === 0){
+        setUsers(data.data.list || []);
+      }
     } catch (error) {
       message.error('获取用户列表失败');
     } finally {
@@ -108,7 +115,11 @@ const UserPage = () => {
 
   const handleDelete = async (id: string) => {
     try {
-      await fetch(`/api/users/${id}`, { method: 'DELETE' });
+      await fetch(`${API_BASE_URL}${API_ROUTES.user.delete}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id }),
+      });
       message.success('删除成功');
       fetchUsers();
     } catch (error) {
@@ -119,14 +130,17 @@ const UserPage = () => {
   const handleSubmit = async (values: Partial<User>) => {
     try {
       if (editingUser) {
-        await fetch(`/api/users/${editingUser.id}`, {
-          method: 'PUT',
+        // 对roles进行处理， 
+        const roles = values.role ? values.role.split(',') : [];
+        const url = editingUser? `${API_BASE_URL}${API_ROUTES.user.update}/${editingUser.id}` : `${API_BASE_URL}${API_ROUTES.user.create}`;
+        await fetch(url, {
+          method: editingUser ? 'PUT' : 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(values),
+          body: JSON.stringify({ ...values, id: editingUser.id,roles:roles }),
         });
         message.success('更新成功');
       } else {
-        await fetch('/api/users', {
+        await fetch(`${API_BASE_URL}${API_ROUTES.user.create}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(values),
